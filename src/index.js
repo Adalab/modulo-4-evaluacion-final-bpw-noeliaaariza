@@ -1,8 +1,10 @@
 const express = require("express");
 const cors = require("cors");
 const mysql = require("mysql2/promise");
-
 require("dotenv").config();
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const swaggerUI = require("swagger-ui-express");
 
 const server = express();
 
@@ -18,6 +20,11 @@ async function getDBConnection() {
   });
   connection.connect();
   return connection;
+}
+
+function generateToken(tokenInfo) {
+  const token = jwt.sign(tokenInfo, "secretKey", { expiresIn: "1h" });
+  return token;
 }
 
 const port = process.env.PORT || 3000;
@@ -41,7 +48,7 @@ server.get("/snakes", async (req, res) => {
         error: "No hay ningún elemento",
       });
     } else {
-      res.json({
+      res.status(200).json({
         info: { count: result.length },
         result: result,
       });
@@ -155,6 +162,89 @@ server.delete("/snake/:id", async (req, res) => {
       res.status(400).json({
         success: false,
         message: "No se ha eliminado el elemento",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: "Ha habido un error interno. Contacte soporte",
+    });
+  }
+});
+
+// endpoint de REGISTRO
+server.post("/users/register", async (req, res) => {
+  try {
+    const { email, nombre, password } = req.body;
+
+    const connection = await getDBConnection();
+    const emailQuery = "SELECT * FROM usuarios_db WHERE email = ?";
+    const [emailResult] = await connection.query(emailQuery, [email]);
+
+    if (emailResult.length === 0) {
+      const passwordHashed = await bcrypt.hash(password, 10);
+      const newUserQuery =
+        "INSERT INTO usuarios_db (email, nombre, password) VALUES (?, ?, ?)";
+      const [newUserResult] = await connection.query(newUserQuery, [
+        email,
+        nombre,
+        passwordHashed,
+      ]);
+
+      connection.end();
+
+      res.status(201).json({
+        success: true,
+        data: newUserResult.id,
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: "El usuario ya existe",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: "Ha habido un error interno. Contacte soporte",
+    });
+  }
+});
+
+// endpoint de LOGIN
+server.post("/users/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const connection = await getDBConnection();
+    const emailQuery = "SELECT * FROM usuarios_db WHERE email = ?";
+    const [userResult] = await connection.query(emailQuery, [email]);
+    const userIsRegistered = userResult.length > 0;
+    if (userIsRegistered) {
+      const isSamePassword = await bcrypt.compare(
+        password,
+        userResult[0].password
+      );
+      if (isSamePassword) {
+        const infoToken = {
+          id: userResult[0].id,
+          email: userResult[0].email,
+        };
+        const token = generateToken(infoToken);
+        console.log("token es ", token);
+        res.status(200).json({
+          status: true,
+          token: token,
+        });
+      } else {
+        res.status(400).json({
+          success: false,
+          message: "Password incorrecto",
+        });
+      }
+    } else {
+      res.status(400).json({
+        success: false,
+        message: "usuario no encontrado",
       });
     }
   } catch (error) {

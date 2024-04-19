@@ -50,4 +50,7 @@ ALTER TABLE snakes
 CHANGE COLUMN expentace expentance INT;
 
 -- query para eliminar item
-DELETE FROM snakes WHERE snake_id = 13
+DELETE FROM snakes WHERE snake_id = 13;
+
+
+
