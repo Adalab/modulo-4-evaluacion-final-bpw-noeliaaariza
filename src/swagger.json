@@ -40,32 +40,32 @@
           }
         }
       },
-      "/createproject": {
+      "/newsnake": {
         "post": {
-          "summary": "Crea un nuevo proyecto",
+          "summary": "Crea una nuevo registro con nuevos datos de serpiente",
           "requestBody": {
             "required": true,
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NewProject"
+                  "$ref": "#/components/schemas/newsnake"
                 }
               }
             }
           },
           "responses": {
             "200": {
-              "description": "Proyecto creado exitosamente"
+              "description": "Registro creado exitosamente"
             }
           }
         }
       },
-      "/project/{idproject}": {
+      "/snake/{id}": {
         "get": {
-          "summary": "Obtiene detalles de un proyecto específico",
+          "summary": "Obtiene detalles de una serpiente en específico",
           "parameters": [
             {
-              "name": "idproject",
+              "name": "snakeID",
               "in": "path",
               "required": true,
               "schema": {
@@ -89,22 +89,53 @@
         "snakes": {
           "type": "object",
           "properties": {
-            "idProject": {
+            "snake_id": {
               "type": "integer"
-            }
-     
-          }
-        },
-        "NewProject": {
-          "type": "object",
-          "properties": {
-            "name": {
+            },
+            "common_name": {
               "type": "string"
             },
-            "slogan": {
+            "scientific_name": {
+              "type": "string"
+            },
+            "habitat": {
+              "type": "string"
+            },
+            "continent": {
+              "type": "string"
+            },
+            "expentance": {
+              "type": "integer"
+            },
+            "size": {
               "type": "string"
             }
-       
+          }
+        },
+        "newsnake": {
+          "type": "object",
+          "properties": {
+            "snake_id": {
+              "type": "integer"
+            },
+            "common_name": {
+              "type": "string"
+            },
+            "scientific_name": {
+              "type": "string"
+            },
+            "habitat": {
+              "type": "string"
+            },
+            "continent": {
+              "type": "string"
+            },
+            "expentance": {
+              "type": "integer"
+            },
+            "size": {
+              "type": "string"
+            }
           }
         }
       }
